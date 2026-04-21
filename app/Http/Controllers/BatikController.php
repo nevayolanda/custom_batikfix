@@ -35,9 +35,10 @@ class BatikController extends Controller
         return redirect()->route('batik.index')->with('success', 'Batik berhasil ditambahkan');
     }
 
-    public function show(Batik $batik)
+    public function show($id)
     {
-        return view('batik.show', compact('batik'));
+        $batik = \App\Models\Batik::where('id_batik', $id)->firstOrFail();
+        return view('batik.detail', compact('batik'));
     }
 
     public function edit(Batik $batik)
@@ -73,7 +74,8 @@ class BatikController extends Controller
 
     public function koleksi()
     {
-        $batik = Batik::all();
-        return view('batik.koleksi', compact('batik'));
+        $batiks = \App\Models\Batik::all();
+        return view('batik', compact('batiks'));
     }
+
 }

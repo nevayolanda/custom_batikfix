@@ -7,6 +7,8 @@ use App\Http\Controllers\CustomOrderController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 
 Route::get('/', function () {
     $pelangganId = session('pelanggan_id');
@@ -32,3 +34,22 @@ Route::resource('pelanggan', PelangganController::class);
 Route::resource('batik', BatikController::class);
 Route::resource('custom_order', CustomOrderController::class);
 Route::resource('pembayaran', PembayaranController::class);
+
+// CART (KERANJANG)
+Route::get('/cart', [CartController::class, 'index']);
+Route::get('/cart/add/{id}', [CartController::class, 'add']);
+
+Route::post('/cart/update/{id}', [CartController::class, 'update']);
+Route::get('/cart/delete/{id}', [CartController::class, 'delete']);
+
+// CHECKOUT & ORDER
+Route::get('/checkout', [OrderController::class, 'checkout']);
+Route::post('/checkout', [OrderController::class, 'checkout']);
+Route::get('/orders', [OrderController::class, 'index']);
+Route::get('/checkout/detail', [OrderController::class, 'checkoutDetail']);
+Route::post('/checkout/process', [OrderController::class, 'processCheckout']);
+
+Route::get('/order/{id}/kirim', [OrderController::class, 'kirim']);
+Route::get('/order/{id}/selesai', [OrderController::class, 'selesai']);
+
+Route::get('/batik/{id}', [BatikController::class, 'show'])->name('batik.show');
