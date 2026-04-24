@@ -47,9 +47,14 @@ Route::get('/checkout', [OrderController::class, 'checkout']);
 Route::post('/checkout', [OrderController::class, 'checkout']);
 Route::get('/orders', [OrderController::class, 'index']);
 Route::get('/checkout/detail', [OrderController::class, 'checkoutDetail']);
-Route::post('/checkout/process', [OrderController::class, 'processCheckout']);
 
 Route::get('/order/{id}/kirim', [OrderController::class, 'kirim']);
 Route::get('/order/{id}/selesai', [OrderController::class, 'selesai']);
 
 Route::get('/batik/{id}', [BatikController::class, 'show'])->name('batik.show');
+Route::match(['get','post'], '/checkout', [OrderController::class, 'checkout']);
+Route::get('/payment/{id}', [OrderController::class, 'payment']);
+
+Route::get('/profile', [PelangganController::class, 'profile']);
+Route::post('/profile/update', [PelangganController::class, 'updateProfile']);
+Route::post('/checkout/process', [OrderController::class, 'processCheckout']);

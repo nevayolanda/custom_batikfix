@@ -6,64 +6,53 @@
 
 <div class="container">
 
-    <div class="card p-4 mb-4">
-        <h4 class="mb-3 text-danger">Checkout</h4>
+    <div class="card p-4">
 
-        <form action="/checkout/process" method="POST">
-            @csrf
+        <h3 class="mb-4 text-danger">Checkout</h3>
 
-            <div class="mb-3">
-                <label class="form-label">Nama</label>
-                <input type="text" name="nama" class="form-control" required>
-            </div>
+        <table class="table">
+            <tr>
+                <th>Produk</th>
+                <th>Qty</th>
+                <th>Harga</th>
+                <th>Total</th>
+            </tr>
 
-            <div class="mb-3">
-                <label class="form-label">Alamat</label>
-                <textarea name="alamat" class="form-control" required></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">No HP</label>
-                <input type="text" name="hp" class="form-control" required>
-            </div>
-
-            <div class="batik-divider"></div>
-
-            <h4 class="text-danger">Produk</h4>
-
-            @php $total = 0; @endphp
+            @php $grandTotal = 0; @endphp
 
             @foreach($items as $item)
-                @php 
-                    $subtotal = $item->product->harga * $item->quantity;
-                    $total += $subtotal;
-                @endphp
+            @php 
+                $total = $item->quantity * $item->product->harga;
+                $grandTotal += $total;
+            @endphp
 
-                <div class="d-flex justify-content-between mb-2">
-                    <span>{{ $item->product->nama_batik }} ({{ $item->quantity }})</span>
-                    <span>Rp {{ number_format($subtotal) }}</span>
-                </div>
+            <tr>
+                <td>{{ $item->product->nama_batik }}</td>
+                <td>{{ $item->quantity }}</td>
+                <td>Rp {{ number_format($item->product->harga, 0, ',', '.') }}</td>
+                <td>Rp {{ number_format($total, 0, ',', '.') }}</td>
+            </tr>
             @endforeach
+        </table>
 
-            <div class="batik-divider"></div>
+        <h4 class="mb-3">
+            Total Bayar: 
+            <span class="text-danger">
+                Rp {{ number_format($grandTotal, 0, ',', '.') }}
+            </span>
+        </h4>
 
-            <h5>Total: Rp {{ number_format($total) }}</h5>
-
-            <div class="batik-divider"></div>
-
-            <h4 class="text-danger">Metode Pembayaran</h4>
-
-            <select name="payment_method" class="form-select mb-3">
-                <option value="transfer">Transfer Bank</option>
-                <option value="ewallet">E-Wallet</option>
-                <option value="cod">COD</option>
-            </select>
-
-            <button class="btn btn-danger w-100">
+        @if(request('product_id'))
+            <a href="/checkout/detail?product_id={{ request('product_id') }}&qty={{ request('qty') }}" 
+               class="btn btn-danger w-100">
+               Bayar Sekarang
+            </a>
+        @else
+            <a href="/checkout/detail" class="btn btn-danger w-100">
                 Bayar Sekarang
-            </button>
+            </a>
+        @endif
 
-        </form>
     </div>
 
 </div>

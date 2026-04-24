@@ -6,56 +6,88 @@
 
 <div class="container">
 
-    <div class="card p-4">
+    <div class="card p-4 mb-4">
+        <h4 class="mb-3 text-danger">Checkout</h4>
 
-        <h3 class="mb-4 text-danger">Checkout</h3>
+        <!-- FORM DIMULAI DI SINI -->
+        <form action="/checkout/process" method="POST">
+            @csrf
 
-        <table class="table">
-            <tr>
-                <th>Produk</th>
-                <th>Qty</th>
-                <th>Harga</th>
-                <th>Total</th>
-            </tr>
+            <!-- AUTO ISI DATA PELANGGAN -->
+            <div class="mb-3">
+                <label class="form-label">Nama</label>
+                <input type="text" 
+                       name="nama" 
+                       class="form-control" 
+                       value="{{ $pelanggan->nama ?? '' }}" 
+                       required>
+            </div>
 
-            @php $grandTotal = 0; @endphp
+            <div class="mb-3">
+                <label class="form-label">Alamat</label>
+                <textarea name="alamat" 
+                          class="form-control" 
+                          required>{{ $pelanggan->alamat ?? '' }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">No HP</label>
+                <input type="text" 
+                       name="hp" 
+                       class="form-control" 
+                       value="{{ $pelanggan->no_hp ?? '' }}" 
+                       required>
+            </div>
+
+            <div class="batik-divider"></div>
+
+            <h4 class="text-danger">Produk</h4>
+
+            @php $total = 0; @endphp
 
             @foreach($items as $item)
-            @php 
-                $total = $item->quantity * $item->product->harga;
-                $grandTotal += $total;
-            @endphp
 
-            <tr>
-                <td>{{ $item->product->nama_batik }}</td>
-                <td>{{ $item->quantity }}</td>
-                <td>Rp {{ number_format($item->product->harga, 0, ',', '.') }}</td>
-                <td>Rp {{ number_format($total, 0, ',', '.') }}</td>
-            </tr>
+                @php 
+                    $subtotal = $item->product->harga * $item->quantity;
+                    $total += $subtotal;
+                @endphp
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>
+                        {{ $item->product->nama_batik }} 
+                        ({{ $item->quantity }})
+                    </span>
+
+                    <span>
+                        Rp {{ number_format($subtotal, 0, ',', '.') }}
+                    </span>
+                </div>
+
             @endforeach
-        </table>
 
-        <div class="batik-divider"></div>
+            <div class="batik-divider"></div>
 
-        <h4 class="mb-3">Total Bayar: 
-            <span class="text-danger">
-                Rp {{ number_format($grandTotal, 0, ',', '.') }}
-            </span>
-        </h4>
+            <h5>
+                Total: Rp {{ number_format($total, 0, ',', '.') }}
+            </h5>
 
-        <!-- BUTTON KE HALAMAN DETAIL -->
-        @if(request('product_id'))
-            <!-- dari tombol PESAN SEKARANG -->
-            <a href="/checkout/detail?product_id={{ request('product_id') }}&qty={{ request('qty') }}" 
-               class="btn btn-danger w-100">
-               Bayar Sekarang
-            </a>
-        @else
-            <!-- dari CART -->
-            <a href="/checkout/detail" class="btn btn-danger w-100">
+            <div class="batik-divider"></div>
+
+            <h4 class="text-danger">Metode Pembayaran</h4>
+
+            <select name="payment_method" class="form-select mb-3">
+                <option value="transfer">Transfer Bank</option>
+                <option value="ewallet">E-Wallet</option>
+                <option value="cod">COD</option>
+            </select>
+
+            <!-- TOMBOL BAYAR -->
+            <button type="submit" class="btn btn-danger w-100">
                 Bayar Sekarang
-            </a>
-        @endif
+            </button>
+
+        </form>
+        <!-- FORM BERAKHIR DI SINI -->
 
     </div>
 

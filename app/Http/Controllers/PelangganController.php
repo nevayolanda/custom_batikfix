@@ -59,4 +59,26 @@ class PelangganController extends Controller
         $pelanggan->delete();
         return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil dihapus');
     }
+
+    // PROFIL USER LOGIN
+    public function profile()
+    {
+        $pelanggan = Pelanggan::find(session('pelanggan_id'));
+
+        return view('profile', compact('pelanggan'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $pelanggan = Pelanggan::find(session('pelanggan_id'));
+
+        $pelanggan->nama = $request->nama;
+        $pelanggan->email = $request->email;
+        $pelanggan->no_hp = $request->no_hp;
+        $pelanggan->alamat = $request->alamat;
+
+        $pelanggan->save();
+
+        return back()->with('success', 'Profil berhasil diperbarui');
+    }
 }
