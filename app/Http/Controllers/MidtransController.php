@@ -19,10 +19,9 @@ class MidtransController extends Controller
 
     public function notification(Request $request)
     {
-        // sudah ada
+       //
     }
 
-    // 🔥 TAMBAHKAN INI DI SINI
     public function createTransaction(Request $request)
     {
         $params = [
