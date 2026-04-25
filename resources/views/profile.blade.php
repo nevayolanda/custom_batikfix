@@ -31,7 +31,7 @@
 
             <div class="mb-3">
                 <label>No HP</label>
-                <input type="text" name="no_hp" value="{{ $pelanggan->no_hp }}" class="form-control">
+                <input type="text" name="no_hp" value="{{ $pelanggan->nomor_telepon }}" class="form-control">
             </div>
 
             <div class="mb-3">

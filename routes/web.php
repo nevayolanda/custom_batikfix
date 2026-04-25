@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\MidtransController;
 
 Route::get('/', function () {
     $pelangganId = session('pelanggan_id');
@@ -58,3 +59,5 @@ Route::get('/payment/{id}', [OrderController::class, 'payment']);
 Route::get('/profile', [PelangganController::class, 'profile']);
 Route::post('/profile/update', [PelangganController::class, 'updateProfile']);
 Route::post('/checkout/process', [OrderController::class, 'processCheckout']);
+
+Route::post('/midtrans/notification', [MidtransController::class, 'notification']);

@@ -9,8 +9,14 @@ class Pelanggan extends Model
     protected $table = 'pelanggan';
     protected $primaryKey = 'id_pelanggan';
     public $timestamps = true;
-    
-    protected $fillable = ['nama', 'alamat', 'nomor_telepon', 'email', 'password'];
+
+    protected $fillable = [
+        'nama',
+        'email',
+        'nomor_telepon',
+        'alamat',
+        'password'
+    ];
 
     public function customOrders()
     {

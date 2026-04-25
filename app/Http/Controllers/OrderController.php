@@ -10,25 +10,21 @@ use App\Models\Batik;
 use App\Models\Pelanggan;
 use Illuminate\Http\Request;
 
+use Midtrans\Config;
+use Midtrans\Snap;
+
 class OrderController extends Controller
 {
     // =========================
-    // HALAMAN CHECKOUT
+    // CHECKOUT
     // =========================
     public function checkout(Request $request)
     {
         $pelanggan = Pelanggan::find(session('pelanggan_id'));
 
-        // =========================
-        // CASE: PESAN SEKARANG
-        // =========================
         if ($request->product_id) {
 
             $product = Batik::where('id_batik', $request->product_id)->first();
-
-            if (!$product) {
-                return redirect('/')->with('error', 'Produk tidak ditemukan');
-            }
 
             $items = collect([
                 (object)[
@@ -40,14 +36,7 @@ class OrderController extends Controller
             return view('checkout', compact('items', 'pelanggan'));
         }
 
-        // =========================
-        // CASE: DARI CART
-        // =========================
         $cart = Cart::where('user_id', session('pelanggan_id'))->first();
-
-        if (!$cart) {
-            return redirect('/cart')->with('error', 'Keranjang kosong');
-        }
 
         $items = CartItem::with('product')
             ->where('cart_id', $cart->id)
@@ -56,74 +45,31 @@ class OrderController extends Controller
         return view('checkout', compact('items', 'pelanggan'));
     }
 
-
     // =========================
-    // HALAMAN DETAIL CHECKOUT
-    // =========================
-    public function checkoutDetail(Request $request)
-    {
-        $pelanggan = Pelanggan::find(session('pelanggan_id'));
-
-        // PESAN SEKARANG
-        if ($request->product_id) {
-            $product = Batik::where('id_batik', $request->product_id)->first();
-
-            $items = collect([
-                (object)[
-                    'product' => $product,
-                    'quantity' => $request->qty
-                ]
-            ]);
-
-            return view('checkout_detail', compact('items', 'pelanggan'));
-        }
-
-        // DARI CART
-        $cart = Cart::where('user_id', session('pelanggan_id'))->first();
-
-        $items = CartItem::with('product')
-            ->where('cart_id', $cart->id)
-            ->get();
-
-        return view('checkout_detail', compact('items', 'pelanggan'));
-    }
-
-
-    // =========================
-    // PROSES PEMBAYARAN
+    // PROCESS CHECKOUT
     // =========================
     public function processCheckout(Request $request)
     {
         $cart = Cart::where('user_id', session('pelanggan_id'))->first();
 
-        if (!$cart) {
-            return redirect('/cart')->with('error', 'Keranjang kosong');
-        }
-
         $items = CartItem::with('product')
             ->where('cart_id', $cart->id)
             ->get();
 
-        if ($items->isEmpty()) {
-            return redirect('/cart')->with('error', 'Keranjang kosong');
-        }
-
-        // HITUNG TOTAL
         $total = 0;
+
         foreach ($items as $item) {
             $total += $item->product->harga * $item->quantity;
         }
 
-        // SIMPAN ORDER
         $order = Order::create([
             'user_id' => session('pelanggan_id'),
             'total_price' => $total,
-            'status' => 'dikemas',
-            'payment_method' => $request->payment_method,
-            'payment_status' => 'sudah bayar'
+            'status' => 'pending',
+            'payment_method' => 'midtrans',
+            'payment_status' => 'unpaid'
         ]);
 
-        // SIMPAN ITEM
         foreach ($items as $item) {
             OrderItem::create([
                 'order_id' => $order->id,
@@ -133,23 +79,41 @@ class OrderController extends Controller
             ]);
         }
 
-        // KOSONGKAN CART
         CartItem::where('cart_id', $cart->id)->delete();
 
         return redirect('/payment/' . $order->id);
     }
 
-
     // =========================
-    // HALAMAN PAYMENT
+    // PAYMENT (MIDTRANS SNAP)
     // =========================
     public function payment($id)
     {
         $order = Order::with('items.product')->findOrFail($id);
 
-        return view('payment', compact('order'));
-    }
+        // CONFIG MIDTRANS
+        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        Config::$isProduction = false;
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
 
+        // PARAMETER TRANSAKSI
+        $params = [
+            'transaction_details' => [
+                'order_id' => $order->id,
+                'gross_amount' => $order->total_price,
+            ],
+            'customer_details' => [
+                'first_name' => 'Customer',
+                'email' => 'customer@email.com',
+            ]
+        ];
+
+        // SNAP TOKEN
+        $snapToken = Snap::getSnapToken($params);
+
+        return view('payment', compact('order', 'snapToken'));
+    }
 
     // =========================
     // LIST ORDER
@@ -161,9 +125,8 @@ class OrderController extends Controller
         return view('orders', compact('orders'));
     }
 
-
     // =========================
-    // STATUS DIKIRIM
+    // KIRIM
     // =========================
     public function kirim($id)
     {
@@ -174,9 +137,8 @@ class OrderController extends Controller
         return back()->with('success', 'Pesanan dikirim');
     }
 
-
     // =========================
-    // STATUS SELESAI
+    // SELESAI
     // =========================
     public function selesai($id)
     {

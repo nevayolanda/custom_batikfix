@@ -67,34 +67,4 @@ class CartController extends Controller
 
         return redirect('/cart')->with('success', 'Produk berhasil ditambahkan ke keranjang');
     }
-
-    public function update($id)
-    {
-        $qty = request('qty');
-
-        // kalau qty < 1 → hapus
-        if ($qty < 1) {
-            CartItem::findOrFail($id)->delete();
-            return back();
-        }
-
-        // batas max 6
-        if ($qty > 6) {
-            return back()->with('error', 'Maksimum pembelian adalah 6');
-        }
-
-        $item = CartItem::findOrFail($id);
-        $item->quantity = $qty;
-        $item->save();
-
-        return back();
-    }
-
-    public function delete($id)
-    {
-        $item = CartItem::findOrFail($id);
-        $item->delete();
-
-        return back()->with('success', 'Produk berhasil dihapus dari keranjang');
-    }
 }
